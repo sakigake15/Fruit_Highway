@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script type="text/javascript" src="js/build/enchant.js"></script>
+    <script src="js/libs/Box2dWeb-2.1.a.3.js"></script>
+    <script src="js/build/plugins/box2d.enchant.js"></script>
+    <title>Document</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            margin: auto;
+            padding: 0;
+            /* background-color: #3c3a3c; */
+        }
+
+        canvas {
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        enchant();
+
+        window.onload = function () {
+            var width = window.innerWidth;
+            var height = window.innerHeight * 320 / width
+            var game = new Core(320, height);
+            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg.png'); //画像のロード指定
+
+            //メインループ
+            game.onload = function () {
+                //物理エンジンの宣言
+                
+                // タイトルシーンを作り、返す関数
+                var createTitleScene = function () {
+                    var scene = new Scene();  // 新しいシーンを作る
+
+                    //タイトル画面
+                    var bg_start_scene = new Sprite(320, height)
+                    bg_start_scene.image = game.assets["bg.png"]
+                    
+                    scene.addChild(bg_start_scene);
+                    
+                    //タイトルのラベル
+                    var label = new Label("");
+                    label.font = "16px impact"
+                    label.color = "white"
+                    label.text = "TAP TO START";
+                    label.x = 115
+                    label.y = 160
+                    scene.addChild(label)
+                    
+                    scene.addEventListener(Event.TOUCH_START, function (e) {
+                        // シーンにタッチイベントを設定
+                        //現在表示しているシーンをゲームシーンに置き換えます
+                        game.replaceScene(createGameScene());
+                    });
+                    // この関数内で作ったシーンを呼び出し元に返します(return)
+                    return scene;
+                };
+
+
+                var createGameScene = function () {
+                    var scene = new Scene();  // 新しいシーンを作る
+                    var bg_game_scene = new Sprite(320, height);
+                    bg_game_scene.image = game.assets["bg.png"];
+                    scene.addChild(bg_game_scene);
+                    var world = new PhysicsWorld(0, 9.8);
+                    //床の作成
+                    //PhyBoxSprite(横幅, 高さ, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
+                    //PhyCircleSprite(半径, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
+                    //動かないもの：enchant.box2d.STATIC_SPRITE、重力の影響を受けて動かしたいもの:enchant.box2d.DYNAMIC_SPRITE、スクリプトで動かすオブジェクト:KINEMATIC_SPRITE
+
+                    var floor1 = create_rectangle(160, height, 320, 16);
+                    var floor2 = create_rectangle(160, 0, 320, 16);
+                    var floor3 = create_rectangle(320, height / 2, 16, height);
+                    var floor4 = create_rectangle(0, height / 2, 16, height);
+                    var barrier1 = create_rectangle(160, 100, 100, 16);
+                    var wall1 = create_rectangle(280, height - 100, 100, 16);
+                    var wall2 = create_rectangle(40, height - 100, 100, 16);
+
+                    var tracks_max = [300, 300, 300, 300]
+                    tracks_max[0] = (Math.floor(Math.random() * 25) + 5) * 30
+                    tracks_max[1] = (Math.floor(Math.random() * 25) + 5) * 30
+                    tracks_max[2] = (Math.floor(Math.random() * 25) + 5) * 30
+                    tracks_max[3] = (Math.floor(Math.random() * 25) + 5) * 30
+
+                    var Fr_fr = [32, 16, 18]
+                    var Fr_we = [10, 30, 50]
+                    var broken_time = 0;
+
+                    var next = new Label("NEXT:")
+                    next.font = "20px cursive";
+                    next.x = 180;
+                    next.y = 10;
+
+                    var score = 0;
+                    var score_la = new Label(score)
+                    score_la.font = "20px cursive";
+                    score_la.x = 50;
+                    score_la.y = 10;
+
+                    var next_fruits = [2, 2, 2]
+                    var ne_fr1 = new Sprite(16, 16)
+
+                    ne_fr1.image = game.assets['icon0.png'];
+                    ne_fr1.frame = Fr_fr[next_fruits[0]];
+                    ne_fr1.x = 245;
+                    ne_fr1.y = 10;
+
+                    var ne_fr2 = new Sprite(16, 16)
+                    ne_fr2.image = game.assets['icon0.png'];
+                    ne_fr2.frame = Fr_fr[next_fruits[1]];
+                    ne_fr2.x = 265;
+                    ne_fr2.y = 10;
+
+                    var ne_fr3 = new Sprite(16, 16)
+                    ne_fr3.image = game.assets['icon0.png'];
+                    ne_fr3.x = 285;
+                    ne_fr1.frame = Fr_fr[next_fruits[0]];
+                    ne_fr2.frame = Fr_fr[next_fruits[1]];
+                    ne_fr3.frame = Fr_fr[next_fruits[2]];
+                    ne_fr3.y = 10;
+
+                    // var st_area = new Sprite(101,60)
+                    // st_area.x=8;
+                    // st_area.y=8;
+                    // st_area.backgroundColor = "#FFAB91";
+                    // var ba_area = new Sprite(102,60)
+                    // ba_area.x=109;
+                    // ba_area.y=8;
+                    // ba_area.backgroundColor = "#FFF59D";
+                    // var me_area = new Sprite(101,60)
+                    // me_area.x=210;
+                    // me_area.y=8;
+                    // me_area.backgroundColor = "#CCFF90";
+
+
+                    // scene.addChild(floor1);
+                    // scene.addChild(floor2);
+                    // scene.addChild(floor3);
+                    // scene.addChild(floor4);
+                    // scene.addChild(barrier1);
+                    // scene.addChild(st_area);
+                    // scene.addChild(ba_area);
+                    // scene.addChild(me_area);
+                    scene.addChild(next);
+                    scene.addChild(score_la);
+                    scene.addChild(ne_fr1);
+                    scene.addChild(ne_fr2);
+                    scene.addChild(ne_fr3);
+                    //魚（円）の作成
+                    function create_rectangle(x, y, w, h) {
+                        var rect = new PhyBoxSprite(w, h, enchant.box2d.STATIC_SPRITE, 1.0, 0.5, 0.3, true);
+                        rect.backgroundColor = "#228B22";
+                        rect.broken = true
+                        rect.position = {
+                            x: x,
+                            y: y
+                        }
+                        scene.addChild(rect);
+                        return rect;
+                    }
+                    // scene.addChild(barrier1);
+
+                    Truck = Class.create(PhyBoxSprite,
+                        {
+                            initialize: function (x, y, max) {
+                                PhyBoxSprite.call(this, 94, 46, enchant.box2d.STATIC_SPRITE, 1.0, 0.5, 0.3, true);
+                                this.image = game.assets['truck2.png'];
+                                this.frame = 0; //画像の中のフレームの数字
+                                // this.scaleX = 0.1; //画像の拡大率
+                                // this.scaleY = 0.1; //画像の拡大率
+                                this.position = {
+                                    x: x,
+                                    y: y
+                                }
+                                var max_la = new Label("aaa")
+                                max_la.font = "10px cursive";
+                                var we_la = new Label("aaa")
+                                we_la.font = "20px cursive";
+
+
+                                this.weight = 0;
+                                this.max = max;
+
+                                this.stack = 0;
+                                this.over = false;
+                                this.frame = 0;
+
+                                this.origin = {
+                                    x: x - 47,
+                                    y: y - 23
+                                }
+
+                                max_la.x = this.x + 70;
+                                max_la.y = this.y + 25;
+                                we_la.x = this.x + 40;
+                                we_la.y = this.y + 10;
+                                this.i = 0;
+                                console.log(this.x);
+                                this.addEventListener(Event.ENTER_FRAME, function () {
+                                    max_la.text = this.max;
+                                    we_la.text = this.weight
+
+                                    if (this.weight > this.max) {
+                                        //色を変える
+                                        this.frame = 1;
+                                        we_la.color = "red";
+                                        if (game.frame >= broken_time + 100) {
+                                            if (this.x < 400) {
+                                                this.x = this.x + 1
+                                                max_la.x = max_la.x + 1;
+                                                we_la.x = we_la.x + 1;
+                                            } else {
+
+                                                this.weight = 0;
+                                                this.over = true;
+                                            }
+                                        }
+                                    } else if (this.weight == this.max) {
+                                        we_la.color = "blue";
+                                        //左端まで行ったら90度回転させ、上に移動
+                                        if (this.x < -10) {
+                                            this.angle = 90;
+
+                                            max_la.rotation = 90;
+                                            we_la.rotation = 90;
+
+                                            this.y = this.y - 10;
+
+                                            max_la.x = this.x - 110;
+                                            max_la.y = this.y + 200;
+                                            we_la.x = this.x - 90;
+                                            we_la.y = this.y + 165;
+                                            if (this.y < 10) {
+                                                scene.removeChild(we_la)
+                                                if (this.weight > 0) {
+                                                    if (this.i < this.weight / 10) {
+                                                        this.i++
+                                                        score = score + 10
+
+                                                        // scene.addChild(score_la);
+                                                    } else {
+                                                        this.i = 0;
+                                                        // this.destroy();
+                                                        this.weight = 0;
+                                                        this.over = true;
+                                                    }
+                                                }
+                                            } else if (this.y < -10) {
+                                            }
+                                        } else {
+                                            this.x = this.x - 10
+
+                                            max_la.x = this.x + 70;
+                                            max_la.y = this.y + 25;
+                                            we_la.x = this.x + 40;
+                                            we_la.y = this.y + 10;
+                                        }
+                                    } else if (this.over == true) {
+                                        this.x = this.origin.x;
+                                        this.y = this.origin.y;
+                                        this.over = false;
+                                        this.angle = 0;
+                                        scene.addChild(we_la)
+                                        we_la.color = "black";
+                                        max_la.rotation = 0;
+                                        we_la.rotation = 0;
+                                        max_la.x = this.x + 70;
+                                        max_la.y = this.y + 25;
+                                        we_la.x = this.x + 40;
+                                        we_la.y = this.y + 10;
+                                        this.frame = 0;
+                                        this.max = (Math.floor(Math.random() * 25) + 5) * 30
+                                    }
+
+                                    //クリックしたら
+                                    this.ontouchend = function () {
+                                        //力を加える(x,y方向)
+                                    };
+                                });
+                                this.broken = true;
+                                //登録
+                                scene.addChild(this);
+                                scene.addChild(we_la);
+                                scene.addChild(max_la);
+                            }
+
+                        });
+                    var truck = []
+                    truck[0] = new Truck(210, height - 30, tracks_max[0]);
+                    truck[1] = new Truck(100, height - 30, tracks_max[1]);
+                    truck[2] = new Truck(260, height - 130, tracks_max[2]);
+                    truck[3] = new Truck(50, height - 130, tracks_max[3]);
+
+                    Fruits = Class.create(PhyCircleSprite,
+                        {
+                            initialize: function (num, x, y, mit, mas, han) {
+                                PhyCircleSprite.call(this, 8, enchant.box2d.DYNAMIC_SPRITE, mit, mas, han, true);
+                                this.image = game.assets['icon0.png'];
+                                this.frame = Fr_fr[num]; //画像の中のフレームの数字
+                                // this.scaleX = 0.1; //画像の拡大率
+                                // this.scaleY = 0.1; //画像の拡大率
+                                this.position = {
+                                    x: x,
+                                    y: y
+                                }
+                                this.destroyed = true;
+                                this.weight = Fr_we[num];
+
+                                this.addEventListener(Event.ENTER_FRAME, function () {
+                                    // for (var i = 0; i < truck.length; i++){
+
+                                    for (var i = 0; i < truck.length; i++) {
+                                        truck[i].contact(function (sprite) { // 衝突判定
+                                            // console.log(sprite);
+                                            if (sprite.broken != true && sprite.destroyed == true) {
+                                                sprite.destroyed = false;
+                                                sprite.destroy();
+                                                truck[i].weight = truck[i].weight + sprite.weight;
+                                                broken_time = game.frame
+
+                                            }
+                                        })
+
+                                    }
+
+                                    // var hit=this.intersect(Truck);
+                                    // if(hit.length>0){
+                                    //     console.log("hit");
+                                    //     //当たったメロンを消す
+
+                                    //     // scene.removeChild();
+                                    //     scene.destroy(this);
+                                    // }
+
+                                    //クリックしたら
+                                    this.ontouchend = function () {
+                                        //力を加える(x,y方向)
+                                    };
+                                });
+                                //登録
+                                scene.addChild(this);
+                            }
+                        });
+
+                    barrier1.addEventListener("enterframe", function () {
+                        if (game.frame % 10 == 0) {
+                            //回転させる
+                            this.angle += 10;
+
+                        }
+                    });
+
+                    //シーンをクリック
+                    scene.ontouchend = function (event) {
+
+
+                    };
+
+                    score_la.addEventListener('enterframe', function () {
+                        //スコアを五桁のゼロ埋めで表示
+                        var score5 = ("00000" + score).slice(-5);
+                        score_la.text = score5
+
+                    })
+
+                    scene.addEventListener('enterframe', function () {
+                        // console.log(game.frame);
+                        // console.log(trucks);
+
+
+                        ne_fr1.frame = Fr_fr[next_fruits[0]];
+                        ne_fr2.frame = Fr_fr[next_fruits[1]];
+                        ne_fr3.frame = Fr_fr[next_fruits[2]];
+                        scene.addChild(ne_fr1);
+                        scene.addChild(ne_fr2);
+                        scene.addChild(ne_fr3);
+
+                        // if(game.frame % 3 == 0){
+                        //     var melon = new Fruits(18,200,10,1.0,0.5,0.3);
+                        //     // var banana = new Fruits(16,100,10,1.0,0.5,0.7);
+                        //     // var strawberry= new Fruits(32,20,10,1.0,0.5,1.0);
+                        //     melon.applyImpulse(new b2Vec2(0, 0.5));
+
+                        // }
+                    })
+                    var fruits_name = 0;
+                    scene.addEventListener("touchstart", function (e) {
+
+                        var melon = new Fruits(next_fruits[0], e.x, 10, 1.0, 0.5, 0.3);
+                        melon.applyImpulse(new b2Vec2(0, 0.5));
+                        next_fruits[0] = next_fruits[1];
+                        next_fruits[1] = next_fruits[2];
+                        next_fruits[2] = 2;
+                        // next_fruits[2] = Math.floor(Math.random() * 3);
+
+                    });
+
+
+                    //物理エンジン処理
+                    scene.onenterframe = function () {
+                        world.step(game.fps);
+                    }
+                    // この関数内で作ったシーンを呼び出し元に返します(return)
+                    return scene;
+
+                };
+                
+                // ゲームオーバーシーンを作り、返す関数
+                var createGameoverScene = function () {
+                    var scene = new Scene();                // 新しいシーンを作る
+                    // 新しいラベル(文字)を作る
+                    var bg = new Sprite(320, 320)
+                    bg.backgroundColor = "rgb(0,200,255)";
+                    bg.image = game.assets["bg_1.png"]
+                    bg.scaleY = 2;
+                    bg.scaleX = 2;
+                    bg.y = 120
+                    bg.x = 0
+                    scene.addChild(bg);
+
+                    var label = new Label("");
+                    label.font = "48px impact"
+                    label.color = "white"
+                    label.text = "GAME OVER";
+                    label.x = 55
+                    label.y = 80
+                    scene.addChild(label)
+
+                    //スコアのラベル
+                    var label_score = new Label("");
+                    label_score.font = "32px impact"
+                    label_score.color = "white"
+                    label_score.text = "SCORE:" + game.score;
+                    label_score.x = 95
+                    label_score.y = 160
+                    scene.addChild(label_score)
+
+                    //ハイスコアの処理
+                    var hightext = 0
+                    if (game.highscore < game.score) {
+                        game.highscore = game.score
+                        hightext = "NEW RECORD!!!"
+                        game.assets["highscore.mp3"].play();
+                    } else {
+                        hightext = "HIGHSCORE:" + game.highscore
+                    }
+
+                    //ハイスコアのラベル
+                    var label_highscore = new Label("");
+                    label_highscore.font = "32px impact"
+                    label_highscore.color = "white"
+                    label_highscore.text = hightext;
+                    label_highscore.x = 60
+                    label_highscore.y = 200
+                    scene.addChild(label_highscore)
+
+                    // シーンの背景色を設定
+                    scene.addEventListener(Event.TOUCH_START, function (e) {
+                        // シーンにタッチイベントを設定
+                        //現在表示しているシーンを外し、直前のシーンを表示します
+                        // game.popScene();
+                        game.replaceScene(createTitleScene());
+                    });
+                    // この関数内で作ったシーンを呼び出し元に返します(return)
+                    return scene;
+                };
+                
+                // ゲームのSceneをタイトルシーンに置き換えます
+                game.replaceScene(createTitleScene());
+            }
+            
+            game.start();
+
+        }
+        //画像、音
+    </script>
+</body>
+
+</html>
