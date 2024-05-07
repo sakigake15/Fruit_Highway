@@ -11,6 +11,7 @@
     <script src="js/build/plugins/box2d.enchant.js"></script>
     <title>Document</title>
     <style type="text/css">
+        /* font-family: "Vonk Regular"; */
         body {
             margin: 0;
             margin: auto;
@@ -22,6 +23,10 @@
             margin: auto;
         }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
@@ -30,61 +35,114 @@
 
         window.onload = function () {
             var width = window.innerWidth;
+            if (width > 320) {
+                width = 320;
+            }
             var height = window.innerHeight * 320 / width
             var game = new Core(320, height);
-            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg.png'); //画像のロード指定
+            var time = 0
+            var stage_number
+            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png'); //画像のロード指定
 
             //メインループ
             game.onload = function () {
                 //物理エンジンの宣言
-                
+
                 // タイトルシーンを作り、返す関数
                 var createTitleScene = function () {
                     var scene = new Scene();  // 新しいシーンを作る
 
                     //タイトル画面
                     var bg_start_scene = new Sprite(320, height)
-                    bg_start_scene.image = game.assets["bg.png"]
-                    
+                    bg_start_scene.image = game.assets["bg_w.png"]
+
                     scene.addChild(bg_start_scene);
-                    
+
                     //タイトルのラベル
                     var label = new Label("");
-                    label.font = "16px impact"
+                    label.font = "16px 'Orbitron'"
                     label.color = "white"
                     label.text = "TAP TO START";
                     label.x = 115
                     label.y = 160
                     scene.addChild(label)
-                    
+
                     scene.addEventListener(Event.TOUCH_START, function (e) {
                         // シーンにタッチイベントを設定
                         //現在表示しているシーンをゲームシーンに置き換えます
-                        game.replaceScene(createGameScene());
+                        game.replaceScene(selectGameScene());
                     });
                     // この関数内で作ったシーンを呼び出し元に返します(return)
                     return scene;
-                };
+                };//FB Agency Regular
 
+                var selectGameScene = function () {
+                    var scene = new Scene();  // 新しいシーンを作る
+                    var bg_game_scene = new Sprite(320, height);
+                    bg_game_scene.image = game.assets["bg_w.png"];
+                    scene.addChild(bg_game_scene);
+                    var button1 = create_button(50, 50, 100, 50, 1);
+                    var button2 = create_button(50, 150, 100, 50, 2);
+                    var button3 = create_button(50, 250, 100, 50, 3);
+                    var button4 = create_button(50, 350, 100, 50, 4);
+                    var button5 = create_button(50, 450, 100, 50, 5);
+                    var button6 = create_button(50, 550, 100, 50, 6);
+                    var button7 = create_button(50, 650, 100, 50, 7);
+                    var button8 = create_button(50, 750, 100, 50, 8);
+                    var button9 = create_button(50, 850, 100, 50, 9);
+                    var button10 = create_button(50, 950, 100, 50, 10);
+
+                    function create_button(x, y, w, h, text) {
+                        var button = new Sprite(w, h);
+                        button.backgroundColor = "#FFAB91";
+                        button.x = x;
+                        button.y = y;
+                        var label = new Label(text);
+                        label.font = "20px 'Orbitron'"
+                        label.color = "white"
+                        label.x = x + 20;
+                        label.y = y + 10;
+                        label.text = text;
+
+                        button.addEventListener("touchstart", function () {
+                            game.stage_number = text;
+                            game.replaceScene(createGameScene());
+                        });
+                        scene.addChild(button);
+                        scene.addChild(label);
+                        return button;
+                    }
+                    return scene;
+
+                }
 
                 var createGameScene = function () {
                     var scene = new Scene();  // 新しいシーンを作る
                     var bg_game_scene = new Sprite(320, height);
-                    bg_game_scene.image = game.assets["bg.png"];
+                    bg_game_scene.image = game.assets["bg_w.png"];
                     scene.addChild(bg_game_scene);
                     var world = new PhysicsWorld(0, 9.8);
                     //床の作成
                     //PhyBoxSprite(横幅, 高さ, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
                     //PhyCircleSprite(半径, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
                     //動かないもの：enchant.box2d.STATIC_SPRITE、重力の影響を受けて動かしたいもの:enchant.box2d.DYNAMIC_SPRITE、スクリプトで動かすオブジェクト:KINEMATIC_SPRITE
+                    var locate = [[[50, height - 130], [260, height - 130], [100, height - 30], [210, height - 30]],
+                    [[50, height - 150], [120, height - 110], [190, height - 70], [260, height - 30]]]
 
-                    var floor1 = create_rectangle(160, height, 320, 16);
-                    var floor2 = create_rectangle(160, 0, 320, 16);
-                    var floor3 = create_rectangle(320, height / 2, 16, height);
-                    var floor4 = create_rectangle(0, height / 2, 16, height);
-                    var barrier1 = create_rectangle(160, 100, 100, 16);
-                    var wall1 = create_rectangle(280, height - 100, 100, 16);
-                    var wall2 = create_rectangle(40, height - 100, 100, 16);
+                    var floor1 = create_rectangle(160, height, 320, 16, true);//床
+                    var floor2 = create_rectangle(160, 0, 320, 16, false);//天井
+                    var floor3 = create_rectangle(320, height / 2, 16, height, false);//右壁
+                    var floor4 = create_rectangle(0, height / 2, 16, height, false);//左壁
+
+                    var barrier1 = create_rectangle(160, 200, 50, 16, false);//障害物
+                    var barrier2 = create_rectangle(60, 300, 50, 16, false);//障害物
+                    var barrier3 = create_rectangle(260, 300, 50, 16, false);//障害物
+                    var wall1 = create_rectangle(locate[game.stage_number - 1][0][0], locate[game.stage_number - 1][0][1] + 30, 100, 16, true);//足場
+                    var wall2 = create_rectangle(locate[game.stage_number - 1][1][0], locate[game.stage_number - 1][1][1] + 30, 100, 16, true)//足場
+                    var wall3 = create_rectangle(locate[game.stage_number - 1][2][0], locate[game.stage_number - 1][2][1] + 30, 100, 16, true)//足場
+                    var wall4 = create_rectangle(locate[game.stage_number - 1][3][0], locate[game.stage_number - 1][3][1] + 30, 100, 16, true)//足場
+
+                    // console.log(game.stage_number);
 
                     var tracks_max = [300, 300, 300, 300]
                     tracks_max[0] = (Math.floor(Math.random() * 25) + 5) * 30
@@ -94,18 +152,44 @@
 
                     var Fr_fr = [32, 16, 18]
                     var Fr_we = [10, 30, 50]
-                    var broken_time = 0;
+
+
 
                     var next = new Label("NEXT:")
-                    next.font = "20px cursive";
+                    next.font = "20px 'Orbitron'"
                     next.x = 180;
                     next.y = 10;
 
                     var score = 0;
                     var score_la = new Label(score)
-                    score_la.font = "20px cursive";
+                    score_la.font = "20px 'Orbitron'"
                     score_la.x = 50;
                     score_la.y = 10;
+
+                    game.score5 = ("00000" + score).slice(-5);
+
+                    var explain = new Label(":10     :30     :50")
+                    explain.font = "20px 'Orbitron'"
+                    explain.x = 150;
+                    explain.y = 30;
+
+                    var ex_fl1 = new Sprite(16, 16)
+                    ex_fl1.image = game.assets['icon0.png'];
+                    ex_fl1.frame = Fr_fr[0];
+                    ex_fl1.x = 132;
+                    ex_fl1.y = 30;
+
+                    var ex_fl2 = new Sprite(16, 16)
+                    ex_fl2.image = game.assets['icon0.png'];
+                    ex_fl2.frame = Fr_fr[1];
+                    ex_fl2.x = 188;
+                    ex_fl2.y = 30;
+
+                    var ex_fl3 = new Sprite(16, 16)
+                    ex_fl3.image = game.assets['icon0.png'];
+                    ex_fl3.frame = Fr_fr[2];
+                    ex_fl3.x = 253;
+                    ex_fl3.y = 30;
 
                     var next_fruits = [2, 2, 2]
                     var ne_fr1 = new Sprite(16, 16)
@@ -129,6 +213,7 @@
                     ne_fr3.frame = Fr_fr[next_fruits[2]];
                     ne_fr3.y = 10;
 
+                    var time = 0;
                     // var st_area = new Sprite(101,60)
                     // st_area.x=8;
                     // st_area.y=8;
@@ -153,14 +238,40 @@
                     // scene.addChild(me_area);
                     scene.addChild(next);
                     scene.addChild(score_la);
+                    scene.addChild(explain);
+                    scene.addChild(ex_fl1);
+                    scene.addChild(ex_fl2);
+                    scene.addChild(ex_fl3);
                     scene.addChild(ne_fr1);
                     scene.addChild(ne_fr2);
                     scene.addChild(ne_fr3);
+
+                    // var player = new Sprite(100, 100);
+                    var surf = new Surface(100, 100);
+                    var arc_x = 50;
+                    var arc_y = 50;
+                    var time_label = new Label()
+                    time_label.font = "16px 'Orbitron'"
+                    time_label.scaleX = 1
+                    time_label.scaleY = 1
+                    time_label.x = 67;
+                    time_label.y = 70;
+                    scene.addChild(time_label);
+                    surf.context.beginPath();
+                    surf.context.fillStyle = 'rgba(252, 0, 0, 0.8)';
+                    surf.context.arc(arc_x, arc_y, 50, -Math.PI / 2 + time / 10, -Math.PI / 2, false);
+                    surf.context.lineTo(arc_x, arc_y);
+                    surf.context.fill();
+                    // player.image = surf
+                    // player.x = 100;
+                    // player.y = 200;
+                    // scene.addChild(surf);
+
                     //魚（円）の作成
-                    function create_rectangle(x, y, w, h) {
+                    function create_rectangle(x, y, w, h, broken) {
                         var rect = new PhyBoxSprite(w, h, enchant.box2d.STATIC_SPRITE, 1.0, 0.5, 0.3, true);
                         rect.backgroundColor = "#228B22";
-                        rect.broken = true
+                        rect.broken = broken
                         rect.position = {
                             x: x,
                             y: y
@@ -182,39 +293,47 @@
                                     x: x,
                                     y: y
                                 }
+                                this.origin = {
+                                    x: x,
+                                    y: y
+                                }
+                                console.log(this.origin);
+                                console.log(this.position);
                                 var max_la = new Label("aaa")
-                                max_la.font = "10px cursive";
-                                var we_la = new Label("aaa")
-                                we_la.font = "20px cursive";
+                                max_la.font = "16px 'Orbitron'"
+                                max_la.scaleX = 0.8;
+                                max_la.scaleY = 0.8;
 
+                                var we_la = new Label("aaa")
+                                // we_la.style.fontWeight = "bold";
+                                we_la.font = "bold 16px 'Orbitron'"
+                                //文字を太くする
 
                                 this.weight = 0;
                                 this.max = max;
 
+                                this.moving = false;
                                 this.stack = 0;
                                 this.over = false;
                                 this.frame = 0;
+                                this.broken_time = 0;
 
-                                this.origin = {
-                                    x: x - 47,
-                                    y: y - 23
-                                }
 
-                                max_la.x = this.x + 70;
-                                max_la.y = this.y + 25;
+                                max_la.x = this.x + 30;
+                                max_la.y = this.y + 22;
                                 we_la.x = this.x + 40;
-                                we_la.y = this.y + 10;
+                                we_la.y = this.y + 8;
                                 this.i = 0;
-                                console.log(this.x);
                                 this.addEventListener(Event.ENTER_FRAME, function () {
                                     max_la.text = this.max;
                                     we_la.text = this.weight
 
                                     if (this.weight > this.max) {
+                                        this.moving = true;
                                         //色を変える
                                         this.frame = 1;
                                         we_la.color = "red";
-                                        if (game.frame >= broken_time + 100) {
+                                        if (game.frame >= this.broken_time + 100) {
                                             if (this.x < 400) {
                                                 this.x = this.x + 1
                                                 max_la.x = max_la.x + 1;
@@ -228,58 +347,62 @@
                                     } else if (this.weight == this.max) {
                                         we_la.color = "blue";
                                         //左端まで行ったら90度回転させ、上に移動
-                                        if (this.x < -10) {
-                                            this.angle = 90;
+                                        if (game.frame >= this.broken_time + 50) {
+                                            this.moving = true;
+                                            if (this.x < -10) {
+                                                this.angle = 90;
 
-                                            max_la.rotation = 90;
-                                            we_la.rotation = 90;
+                                                max_la.rotation = 90;
+                                                we_la.rotation = 90;
 
-                                            this.y = this.y - 10;
+                                                this.y = this.y - 10;
 
-                                            max_la.x = this.x - 110;
-                                            max_la.y = this.y + 200;
-                                            we_la.x = this.x - 90;
-                                            we_la.y = this.y + 165;
-                                            if (this.y < 10) {
-                                                scene.removeChild(we_la)
-                                                if (this.weight > 0) {
-                                                    if (this.i < this.weight / 10) {
-                                                        this.i++
-                                                        score = score + 10
+                                                max_la.x = this.x - 105;
+                                                max_la.y = this.y + 150;
+                                                we_la.x = this.x - 90;
+                                                we_la.y = this.y + 165;
+                                                if (this.y < 10) {
+                                                    scene.removeChild(we_la)
+                                                    if (this.weight > 0) {
+                                                        if (this.i < this.weight / 10) {
+                                                            this.i++
+                                                            score = score + 10
 
-                                                        // scene.addChild(score_la);
-                                                    } else {
-                                                        this.i = 0;
-                                                        // this.destroy();
-                                                        this.weight = 0;
-                                                        this.over = true;
+                                                            // scene.addChild(score_la);
+                                                        } else {
+                                                            this.i = 0;
+                                                            // this.destroy();
+                                                            this.weight = 0;
+                                                            this.over = true;
+                                                        }
                                                     }
+                                                } else if (this.y < -10) {
                                                 }
-                                            } else if (this.y < -10) {
-                                            }
-                                        } else {
-                                            this.x = this.x - 10
+                                            } else {
+                                                this.x = this.x - 10
 
-                                            max_la.x = this.x + 70;
-                                            max_la.y = this.y + 25;
-                                            we_la.x = this.x + 40;
-                                            we_la.y = this.y + 10;
+                                                max_la.x = this.x + 30;
+                                                max_la.y = this.y + 22;
+                                                we_la.x = this.x + 40;
+                                                we_la.y = this.y + 8;
+                                            }
                                         }
                                     } else if (this.over == true) {
-                                        this.x = this.origin.x;
-                                        this.y = this.origin.y;
-                                        this.over = false;
                                         this.angle = 0;
-                                        scene.addChild(we_la)
-                                        we_la.color = "black";
                                         max_la.rotation = 0;
                                         we_la.rotation = 0;
-                                        max_la.x = this.x + 70;
-                                        max_la.y = this.y + 25;
+                                        this.x = this.origin.x - 47
+                                        this.y = this.origin.y - 23
+                                        this.over = false;
+                                        scene.addChild(we_la)
+                                        we_la.color = "black";
+                                        max_la.x = this.x + 30;
+                                        max_la.y = this.y + 22;
                                         we_la.x = this.x + 40;
-                                        we_la.y = this.y + 10;
+                                        we_la.y = this.y + 8;
                                         this.frame = 0;
                                         this.max = (Math.floor(Math.random() * 25) + 5) * 30
+                                        this.moving = false;
                                     }
 
                                     //クリックしたら
@@ -296,10 +419,10 @@
 
                         });
                     var truck = []
-                    truck[0] = new Truck(210, height - 30, tracks_max[0]);
-                    truck[1] = new Truck(100, height - 30, tracks_max[1]);
-                    truck[2] = new Truck(260, height - 130, tracks_max[2]);
-                    truck[3] = new Truck(50, height - 130, tracks_max[3]);
+                    truck[0] = new Truck(locate[game.stage_number - 1][0][0], locate[game.stage_number - 1][0][1], tracks_max[0]);
+                    truck[1] = new Truck(locate[game.stage_number - 1][1][0], locate[game.stage_number - 1][1][1], tracks_max[1]);
+                    truck[2] = new Truck(locate[game.stage_number - 1][2][0], locate[game.stage_number - 1][2][1], tracks_max[2]);
+                    truck[3] = new Truck(locate[game.stage_number - 1][3][0], locate[game.stage_number - 1][3][1], tracks_max[3]);
 
                     Fruits = Class.create(PhyCircleSprite,
                         {
@@ -322,16 +445,34 @@
                                     for (var i = 0; i < truck.length; i++) {
                                         truck[i].contact(function (sprite) { // 衝突判定
                                             // console.log(sprite);
-                                            if (sprite.broken != true && sprite.destroyed == true) {
+                                            if (sprite.destroyed == true && truck[i].moving == false) {
                                                 sprite.destroyed = false;
                                                 sprite.destroy();
                                                 truck[i].weight = truck[i].weight + sprite.weight;
-                                                broken_time = game.frame
+                                                truck[i].broken_time = game.frame
 
                                             }
                                         })
 
                                     }
+                                    wall1.contact(function (sprite) { // 衝突判定
+                                        if (sprite.destroyed == true) {
+                                            sprite.destroyed = false;
+                                            sprite.destroy();
+                                        }
+                                    })
+                                    wall2.contact(function (sprite) { // 衝突判定
+                                        if (sprite.destroyed == true) {
+                                            sprite.destroyed = false;
+                                            sprite.destroy();
+                                        }
+                                    })
+                                    floor1.contact(function (sprite) { // 衝突判定
+                                        if (sprite.destroyed == true) {
+                                            sprite.destroyed = false;
+                                            sprite.destroy();
+                                        }
+                                    })
 
                                     // var hit=this.intersect(Truck);
                                     // if(hit.length>0){
@@ -359,6 +500,20 @@
 
                         }
                     });
+                    barrier2.addEventListener("enterframe", function () {
+                        if (game.frame % 10 == 0) {
+                            //回転させる
+                            this.angle -= 10;
+
+                        }
+                    });
+                    barrier3.addEventListener("enterframe", function () {
+                        if (game.frame % 10 == 0) {
+                            //回転させる
+                            this.angle -= 10;
+
+                        }
+                    });
 
                     //シーンをクリック
                     scene.ontouchend = function (event) {
@@ -368,31 +523,64 @@
 
                     score_la.addEventListener('enterframe', function () {
                         //スコアを五桁のゼロ埋めで表示
-                        var score5 = ("00000" + score).slice(-5);
+                        score5 = ("00000" + score).slice(-5);
                         score_la.text = score5
 
                     })
 
+                    var time_counter = new Sprite(100, 100)
+                    time_counter.image = surf
+                    time_counter.rotation = 270
+                    time_counter.x = 30
+                    time_counter.y = 30
+                    scene.addChild(time_counter);
+                    scene.addChild(time_label);
+
+                    var currentAngle = 0;
+
+                    surf.context.fillStyle = 'rgba(252, 200, 0, 0.8)';
+                    surf.context.arc(arc_x, arc_y, 50, currentAngle, Math.PI * 2, false,);
+                    surf.context.lineTo(arc_x, arc_y);
+                    surf.context.fill();
                     scene.addEventListener('enterframe', function () {
-                        // console.log(game.frame);
-                        // console.log(trucks);
+                        time_label.text = 60 - time;
+                        if (game.frame % 30 == 0) {
+                            time++
+                            surf.context.clearRect(0, 0, 100, 100);
+                            surf.context.beginPath();
+                            surf.context.fillStyle = 'rgba(252, 200, 0, 0.8)';
+                            surf.context.arc(arc_x, arc_y, 50, currentAngle, Math.PI * 2, false,);
+                            surf.context.lineTo(arc_x, arc_y);
+                            surf.context.closePath();
+                            surf.context.fill();
+                            currentAngle += Math.PI / 180 * 6;
+                        }
+                        if (time > 60) {
+                            if (score > 100) {
+                                game.replaceScene(createClearScene());
+                                console.log("clear");
+                            } else {
+                                game.replaceScene(createGameOverScene());
+                            }
+                            console.log(score);
+                            // console.log(trucks);
 
+                            ne_fr1.frame = Fr_fr[next_fruits[0]];
+                            ne_fr2.frame = Fr_fr[next_fruits[1]];
+                            ne_fr3.frame = Fr_fr[next_fruits[2]];
+                            scene.addChild(ne_fr1);
+                            scene.addChild(ne_fr2);
+                            scene.addChild(ne_fr3);
 
-                        ne_fr1.frame = Fr_fr[next_fruits[0]];
-                        ne_fr2.frame = Fr_fr[next_fruits[1]];
-                        ne_fr3.frame = Fr_fr[next_fruits[2]];
-                        scene.addChild(ne_fr1);
-                        scene.addChild(ne_fr2);
-                        scene.addChild(ne_fr3);
+                            // if(game.frame % 3 == 0){
+                            //     var melon = new Fruits(18,200,10,1.0,0.5,0.3);
+                            //     // var banana = new Fruits(16,100,10,1.0,0.5,0.7);
+                            //     // var strawberry= new Fruits(32,20,10,1.0,0.5,1.0);
+                            //     melon.applyImpulse(new b2Vec2(0, 0.5));
 
-                        // if(game.frame % 3 == 0){
-                        //     var melon = new Fruits(18,200,10,1.0,0.5,0.3);
-                        //     // var banana = new Fruits(16,100,10,1.0,0.5,0.7);
-                        //     // var strawberry= new Fruits(32,20,10,1.0,0.5,1.0);
-                        //     melon.applyImpulse(new b2Vec2(0, 0.5));
-
-                        // }
-                    })
+                            // }
+                        }
+                    });
                     var fruits_name = 0;
                     scene.addEventListener("touchstart", function (e) {
 
@@ -414,14 +602,14 @@
                     return scene;
 
                 };
-                
-                // ゲームオーバーシーンを作り、返す関数
-                var createGameoverScene = function () {
+
+                // ゲームクリアシーンを作り、返す関数
+                var createClearScene = function () {
                     var scene = new Scene();                // 新しいシーンを作る
                     // 新しいラベル(文字)を作る
                     var bg = new Sprite(320, 320)
                     bg.backgroundColor = "rgb(0,200,255)";
-                    bg.image = game.assets["bg_1.png"]
+                    bg.image = game.assets["bg_w.png"]
                     bg.scaleY = 2;
                     bg.scaleX = 2;
                     bg.y = 120
@@ -429,40 +617,40 @@
                     scene.addChild(bg);
 
                     var label = new Label("");
-                    label.font = "48px impact"
+                    label.font = "32px 'Orbitron'"
                     label.color = "white"
-                    label.text = "GAME OVER";
+                    label.text = "GAME CLEAR";
                     label.x = 55
                     label.y = 80
                     scene.addChild(label)
 
                     //スコアのラベル
                     var label_score = new Label("");
-                    label_score.font = "32px impact"
+                    label_score.font = "32px 'Orbitron'"
                     label_score.color = "white"
-                    label_score.text = "SCORE:" + game.score;
+                    label_score.text = "SCORE:" + game.score5;
                     label_score.x = 95
                     label_score.y = 160
                     scene.addChild(label_score)
 
-                    //ハイスコアの処理
-                    var hightext = 0
-                    if (game.highscore < game.score) {
-                        game.highscore = game.score
-                        hightext = "NEW RECORD!!!"
-                        game.assets["highscore.mp3"].play();
-                    } else {
-                        hightext = "HIGHSCORE:" + game.highscore
-                    }
+                    // //ハイスコアの処理
+                    // var hightext = 0
+                    // if (game.highscore < game.score) {
+                    //     game.highscore = game.score
+                    //     hightext = "NEW RECORD!!!"
+                    //     game.assets["highscore.mp3"].play();
+                    // } else {
+                    //     hightext = "HIGHSCORE:" + game.highscore
+                    // }
 
-                    //ハイスコアのラベル
-                    var label_highscore = new Label("");
-                    label_highscore.font = "32px impact"
-                    label_highscore.color = "white"
-                    label_highscore.text = hightext;
-                    label_highscore.x = 60
-                    label_highscore.y = 200
-                    scene.addChild(label_highscore)
+                    // //ハイスコアのラベル
+                    // var label_highscore = new Label("");
+                    // label_highscore.font = "32px impact"
+                    // label_highscore.color = "white"
+                    // label_highscore.text = hightext;
+                    // label_highscore.x = 60
+                    // label_highscore.y = 200
+                    // scene.addChild(label_highscore)
 
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
@@ -474,11 +662,70 @@
                     // この関数内で作ったシーンを呼び出し元に返します(return)
                     return scene;
                 };
-                
+                // ゲームオーバーシーンを作り、返す関数
+                var createGameOverScene = function () {
+                    var scene = new Scene();                // 新しいシーンを作る
+                    // 新しいラベル(文字)を作る
+                    var bg = new Sprite(320, 320)
+                    bg.backgroundColor = "rgb(0,200,255)";
+                    bg.image = game.assets["bg_w.png"]
+                    bg.scaleY = 2;
+                    bg.scaleX = 2;
+                    bg.y = 120
+                    bg.x = 0
+                    scene.addChild(bg);
+
+                    var label = new Label("");
+                    label.font = "32px 'Orbitron'"
+                    label.color = "white"
+                    label.text = "GAME OVER";
+                    label.x = 55
+                    label.y = 80
+                    scene.addChild(label)
+
+                    //スコアのラベル
+                    var label_score = new Label("");
+                    label_score.font = "32px 'Orbitron'"
+                    label_score.color = "white"
+                    label_score.text = "SCORE:" + game.score5;
+                    label_score.x = 95
+                    label_score.y = 160
+                    scene.addChild(label_score)
+
+                    // //ハイスコアの処理
+                    // var hightext = 0
+                    // if (game.highscore < game.score) {
+                    //     game.highscore = game.score
+                    //     hightext = "NEW RECORD!!!"
+                    //     game.assets["highscore.mp3"].play();
+                    // } else {
+                    //     hightext = "HIGHSCORE:" + game.highscore
+                    // }
+
+                    // //ハイスコアのラベル
+                    // var label_highscore = new Label("");
+                    // label_highscore.font = "32px impact"
+                    // label_highscore.color = "white"
+                    // label_highscore.text = hightext;
+                    // label_highscore.x = 60
+                    // label_highscore.y = 200
+                    // scene.addChild(label_highscore)
+
+                    // シーンの背景色を設定
+                    scene.addEventListener(Event.TOUCH_START, function (e) {
+                        // シーンにタッチイベントを設定
+                        //現在表示しているシーンを外し、直前のシーンを表示します
+                        // game.popScene();
+                        game.replaceScene(createTitleScene());
+                    });
+                    // この関数内で作ったシーンを呼び出し元に返します(return)
+                    return scene;
+                };
+
                 // ゲームのSceneをタイトルシーンに置き換えます
                 game.replaceScene(createTitleScene());
             }
-            
+
             game.start();
 
         }
