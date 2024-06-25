@@ -33,6 +33,19 @@
     <script>
         enchant();
 
+        var moveStageToCenter = function (core) {
+            var stagePos = {
+                top: (window.innerHeight - (core.height * core.scale)) / 2,
+                left: (window.innerWidth - (core.width * core.scale)) / 2,
+            };
+            var stage = document.getElementById('enchant-stage');
+            stage.style.position = 'absolute';
+            stage.style.top = stagePos.top + 'px';
+            stage.style.left = stagePos.left + 'px';
+            core._pageX = stagePos.left;
+            core._pageY = stagePos.top;
+        }
+
         window.onload = function () {
             var width = window.innerWidth;
             if (width > 320) {
@@ -40,6 +53,7 @@
             }
             var height = window.innerHeight * 320 / width
             var game = new Core(width, height);
+            moveStageToCenter(game);
             var time = 0
             var score = 0;
             var stage_number
@@ -51,7 +65,7 @@
             game.onload = function () {
                 //物理エンジンの宣言
 
-                game.addStar = function (x, y, scene, flame,scale) {
+                game.addStar = function (x, y, scene, flame, scale) {
                     var star = new Sprite(16, 16);
                     star.image = game.assets["icon0.png"];
                     star.x = x
@@ -134,13 +148,13 @@
                         scene.addChild(label);
 
                         if (get_star[text - 1] >= 3) {
-                            game.addStar(x + 160, y + 40, scene, 31,1.5);
+                            game.addStar(x + 160, y + 40, scene, 31, 1.5);
                         }
                         if (get_star[text - 1] >= 2) {
-                            game.addStar(x + 130, y + 40, scene, 30,1.5);
+                            game.addStar(x + 130, y + 40, scene, 30, 1.5);
                         }
                         if (get_star[text - 1] >= 1) {
-                            game.addStar(x + 100, y + 40, scene, 30,1.5);
+                            game.addStar(x + 100, y + 40, scene, 30, 1.5);
                         }
 
                         return button;
@@ -748,18 +762,18 @@
                     label_score.x = 40
                     label_score.y = 160
                     scene.addChild(label_score)
-                    
+
                     //スターの表示
                     if (star >= 3) {
-                        game.addStar(160, 40, scene, 31,2);
+                        game.addStar(160, 40, scene, 31, 2);
                     }
                     if (star >= 2) {
-                        game.addStar(130, 40, scene, 30,2);
+                        game.addStar(130, 40, scene, 30, 2);
                     }
                     if (star >= 1) {
-                        game.addStar(100, 40, scene, 30,2);
+                        game.addStar(100, 40, scene, 30, 2);
                     }
-                    
+
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
                         // シーンにタッチイベントを設定
