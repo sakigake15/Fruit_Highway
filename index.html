@@ -41,13 +41,26 @@
             var height = window.innerHeight * 320 / width
             var game = new Core(width, height);
             var time = 0
+            var score = 0;
             var stage_number
             var clear_stage
+            var get_star = []
             game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png'); //画像のロード指定
 
             //メインループ
             game.onload = function () {
                 //物理エンジンの宣言
+
+                game.addStar = function (x, y, scene, flame,scale) {
+                    var star = new Sprite(16, 16);
+                    star.image = game.assets["icon0.png"];
+                    star.x = x
+                    star.y = y
+                    star.frame = flame
+                    star.scaleX = scale
+                    star.scaleY = scale
+                    scene.addChild(star);
+                };
 
                 // タイトルシーンを作り、返す関数
                 var createTitleScene = function () {
@@ -78,7 +91,16 @@
                 };
 
                 var selectGameScene = function () {
-                    clear_stage = localStorage.getItem('Fruits_clear_stage');
+                    var local_list = localStorage.getItem('Fruits_local_list');
+                    if (local_list == null) {
+                        clear_stage = 0
+                        get_star = [0, 0, 0]
+                    } else {
+                        var local_list = JSON.parse(local_list);
+                        clear_stage = local_list.clear_stage
+                        get_star = local_list.get_star
+                    }
+
                     var scene = new Scene();  // 新しいシーンを作る
                     var bg_game_scene = new Sprite(320, height);
                     bg_game_scene.image = game.assets["bg_w.png"];
@@ -86,11 +108,9 @@
                     var button1 = create_button(50, 50, 220, 70, 1);
                     if (clear_stage >= 1) {
                         var button2 = create_button(50, 170, 220, 70, 2);
-
                     }
                     if (clear_stage >= 2) {
                         var button3 = create_button(50, 290, 220, 70, 3);
-
                     }
 
 
@@ -112,6 +132,17 @@
                         });
                         scene.addChild(button);
                         scene.addChild(label);
+
+                        if (get_star[text - 1] >= 3) {
+                            game.addStar(x + 160, y + 40, scene, 31,1.5);
+                        }
+                        if (get_star[text - 1] >= 2) {
+                            game.addStar(x + 130, y + 40, scene, 30,1.5);
+                        }
+                        if (get_star[text - 1] >= 1) {
+                            game.addStar(x + 100, y + 40, scene, 30,1.5);
+                        }
+
                         return button;
                     }
                     return scene;
@@ -128,10 +159,10 @@
                     //PhyBoxSprite(横幅, 高さ, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
                     //PhyCircleSprite(半径, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
                     //動かないもの：enchant.box2d.STATIC_SPRITE、重力の影響を受けて動かしたいもの:enchant.box2d.DYNAMIC_SPRITE、スクリプトで動かすオブジェクト:KINEMATIC_SPRITE
-                    var locate = 
-                    [[[50, height - 130], [260, height - 130], [100, height - 30], [210, height - 30]],
-                    [[50, height - 150], [120, height - 110], [190, height - 70], [260, height - 30]],
-                    [[50, height - 80], [160, height - 150], [160, height - 30], [260, height - 80]]]
+                    var locate =
+                        [[[50, height - 130], [260, height - 130], [100, height - 30], [210, height - 30]],
+                        [[50, height - 150], [120, height - 110], [190, height - 70], [260, height - 30]],
+                        [[50, height - 80], [160, height - 150], [160, height - 30], [260, height - 80]]]
 
                     var floor1 = create_rectangle(160, height, 320, 16, true);//床
                     var floor2 = create_rectangle(160, 0, 320, 16, false);//天井
@@ -164,7 +195,6 @@
                     next.x = 180;
                     next.y = 10;
 
-                    var score = 0;
                     var score_la = new Label(score)
                     score_la.font = "20px 'Orbitron'"
                     score_la.x = 50;
@@ -221,19 +251,20 @@
                     star1.x = 212;
                     star1.y = 55;
 
-                    var  star2 = new Sprite(16, 16)
+                    var star2 = new Sprite(16, 16)
                     star2.image = game.assets['icon0.png'];
                     star2.frame = 30
                     star2.x = 252;
                     star2.y = 55;
 
-                    var  star3 = new Sprite(16, 16)
+                    var star3 = new Sprite(16, 16)
                     star3.image = game.assets['icon0.png'];
                     star3.frame = 31
                     star3.x = 292;
                     star3.y = 55;
 
                     var time = 0;
+                    score = 0;
                     // var st_area = new Sprite(101,60)
                     // st_area.x=8;
                     // st_area.y=8;
@@ -567,6 +598,7 @@
                         bar.context.fill();
 
 
+
                     })
 
                     var time_counter = new Sprite(100, 100)
@@ -588,6 +620,10 @@
                     score_counter.x = 140
                     score_counter.y = 50
                     scene.addChild(score_counter);
+
+                    scene.addChild(star1);
+                    scene.addChild(star2);
+                    scene.addChild(star3);
 
 
                     var currentAngle = 0;
@@ -620,22 +656,22 @@
                             console.log(score);
                             // console.log(trucks);
 
-                            
+
                             // if(game.frame % 3 == 0){
-                                //     var melon = new Fruits(18,200,10,1.0,0.5,0.3);
-                                //     // var banana = new Fruits(16,100,10,1.0,0.5,0.7);
+                            //     var melon = new Fruits(18,200,10,1.0,0.5,0.3);
+                            //     // var banana = new Fruits(16,100,10,1.0,0.5,0.7);
                             //     // var strawberry= new Fruits(32,20,10,1.0,0.5,1.0);
                             //     melon.applyImpulse(new b2Vec2(0, 0.5));
 
                             // }
                         }
-                        
-                        
+
+
                     });
                     var fruits_name = 0;
                     scene.addEventListener("touchstart", function (e) {
                         console.log(next_fruits)
-                        
+
                         var melon = new Fruits(next_fruits[0], e.x, 10, 1.0, 0.5, 0.3);
                         melon.applyImpulse(new b2Vec2(0, 0.5));
                         next_fruits[0] = next_fruits[1];
@@ -647,7 +683,7 @@
                         scene.addChild(ne_fr1);
                         scene.addChild(ne_fr2);
                         scene.addChild(ne_fr3);
-                        
+
                     });
 
 
@@ -663,7 +699,28 @@
                 // ゲームクリアシーンを作り、返す関数
                 var createClearScene = function () {
                     var scene = new Scene();                // 新しいシーンを作る
-                    localStorage.setItem('Fruits_clear_stage', game.stage_number);
+                    if (game.stage_number > clear_stage) {
+                        clear_stage = game.stage_number
+                    }
+                    if (score >= 1000) {
+                        var star = 3
+                    } else if (score >= 750) {
+                        var star = 2
+                    } else {
+                        var star = 1
+                    }
+                    if (get_star[game.stage_number - 1] < star) {
+                        get_star[game.stage_number - 1] = star
+                    }
+
+                    //ローカルストレージに保存
+                    var local_list = {
+                        clear_stage: clear_stage,
+                        get_star: get_star
+                    }
+
+                    localStorage.setItem('Fruits_local_list', JSON.stringify(local_list));
+
                     // 新しいラベル(文字)を作る
                     var bg = new Sprite(320, 320)
                     bg.backgroundColor = "rgb(0,200,255)";
@@ -674,6 +731,7 @@
                     bg.x = 0
                     scene.addChild(bg);
 
+                    //タイトルのラベル
                     var label = new Label("");
                     label.font = "32px 'Orbitron'"
                     label.color = "#006400"
@@ -690,26 +748,18 @@
                     label_score.x = 40
                     label_score.y = 160
                     scene.addChild(label_score)
-
-                    // //ハイスコアの処理
-                    // var hightext = 0
-                    // if (game.highscore < game.score) {
-                    //     game.highscore = game.score
-                    //     hightext = "NEW RECORD!!!"
-                    //     game.assets["highscore.mp3"].play();
-                    // } else {
-                    //     hightext = "HIGHSCORE:" + game.highscore
-                    // }
-
-                    // //ハイスコアのラベル
-                    // var label_highscore = new Label("");
-                    // label_highscore.font = "32px impact"
-                    // label_highscore.color = "white"
-                    // label_highscore.text = hightext;
-                    // label_highscore.x = 60
-                    // label_highscore.y = 200
-                    // scene.addChild(label_highscore)
-
+                    
+                    //スターの表示
+                    if (star >= 3) {
+                        game.addStar(160, 40, scene, 31,2);
+                    }
+                    if (star >= 2) {
+                        game.addStar(130, 40, scene, 30,2);
+                    }
+                    if (star >= 1) {
+                        game.addStar(100, 40, scene, 30,2);
+                    }
+                    
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
                         // シーンにタッチイベントを設定

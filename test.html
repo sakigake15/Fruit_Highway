@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        var myObject = {
+            name: "Alice",
+            age: 30,
+            job: "Engineer",
+            sayHello: function(yourName) {
+                console.log("Hello, " + yourName + "! My name is " + this.name + ".");
+            }
+        };
+        myObject.name = "Bob";
+        console.log(myObject.name);
+        myObject.sayHello("Charlie");
+        myObject.aaa = function() {
+            console.log("aaa");
+        };
+        myObject.aaa();
+    </script>
+</body>
+
+</html>
