@@ -55,12 +55,13 @@
             var height = window.innerHeight * 320 / width
             var game = new Core(width, height);
             moveStageToCenter(game);
-            var time = 0
+            var time = 0;
             var score = 0;
             var stage_number
             var clear_stage
+            var clear_quality = 0
             var get_star = []
-            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png'); //画像のロード指定
+            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png', 'bg01.png', 'bg02.png', 'bg03.png'); //画像のロード指定
 
             //メインループ
             game.onload = function () {
@@ -76,6 +77,36 @@
                     star.scaleY = scale
                     scene.addChild(star);
                 };
+                //星の数を合計する関数
+                function total_star(get_star) {
+                    var total = 0;
+                    for (var i = 0; i < get_star.length; i++) {
+                        total = total + get_star[i]
+                    }
+                    return total
+                }
+                function get_local_list() {
+                    var local_list = localStorage.getItem('Fruits_local_list');
+                    if (local_list == null) {
+                        clear_stage = 0
+                        get_star = [0, 0, 0]
+                        clear_quality = 0
+                    } else {
+                        var local_list = JSON.parse(local_list);
+                        clear_stage = local_list.clear_stage
+                        get_star = local_list.get_star
+                        clear_quality = local_list.clear_quality
+                    }
+                }
+
+                function set_local_list() {
+                    var local_list = {
+                        clear_stage: clear_stage,
+                        get_star: get_star,
+                        clear_quality: clear_quality
+                    }
+                    localStorage.setItem('Fruits_local_list', JSON.stringify(local_list));
+                }
 
                 // タイトルシーンを作り、返す関数
                 var createTitleScene = function () {
@@ -106,15 +137,7 @@
                 };
 
                 var selectGameScene = function () {
-                    var local_list = localStorage.getItem('Fruits_local_list');
-                    if (local_list == null) {
-                        clear_stage = 0
-                        get_star = [0, 0, 0]
-                    } else {
-                        var local_list = JSON.parse(local_list);
-                        clear_stage = local_list.clear_stage
-                        get_star = local_list.get_star
-                    }
+                    get_local_list()
 
                     var scene = new Scene();  // 新しいシーンを作る
                     var bg_game_scene = new Sprite(320, height);
@@ -144,6 +167,8 @@
                         button.addEventListener("touchstart", function () {
                             game.stage_number = text;
                             game.replaceScene(createGameScene());
+                            // game.replaceScene(createClearScene());
+
                         });
                         scene.addChild(button);
                         scene.addChild(label);
@@ -174,23 +199,29 @@
                     //PhyBoxSprite(横幅, 高さ, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
                     //PhyCircleSprite(半径, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
                     //動かないもの：enchant.box2d.STATIC_SPRITE、重力の影響を受けて動かしたいもの:enchant.box2d.DYNAMIC_SPRITE、スクリプトで動かすオブジェクト:KINEMATIC_SPRITE
-                    var locate =
-                        [[[50, height - 130], [260, height - 130], [100, height - 30], [210, height - 30]],
+                    var locate = {
+                        truck: [[[50, height - 130], [260, height - 130], [100, height - 30], [210, height - 30]],
                         [[50, height - 150], [120, height - 110], [190, height - 70], [260, height - 30]],
-                        [[50, height - 80], [160, height - 150], [160, height - 30], [260, height - 80]]]
+                        [[50, height - 80], [160, height - 150], [160, height - 30], [260, height - 80]]],
+                        barrier: [[[160, 200], [60, 300], [260, 300]],
+                        [[160, 200], [60, 300], [260, 300]],
+                        [[160, 200], [60, 300], [260, 300]]],
+
+                    }
 
                     var floor1 = create_rectangle(160, height, 320, 16, true);//床
                     var floor2 = create_rectangle(160, 0, 320, 16, false);//天井
                     var floor3 = create_rectangle(320, height / 2, 16, height, false);//右壁
                     var floor4 = create_rectangle(0, height / 2, 16, height, false);//左壁
 
-                    var barrier1 = create_rectangle(160, 200, 50, 16, false);//障害物
-                    var barrier2 = create_rectangle(60, 300, 50, 16, false);//障害物
-                    var barrier3 = create_rectangle(260, 300, 50, 16, false);//障害物
-                    var wall1 = create_rectangle(locate[game.stage_number - 1][0][0], locate[game.stage_number - 1][0][1] + 30, 100, 16, false);//足場
-                    var wall2 = create_rectangle(locate[game.stage_number - 1][1][0], locate[game.stage_number - 1][1][1] + 30, 100, 16, false)//足場
-                    var wall3 = create_rectangle(locate[game.stage_number - 1][2][0], locate[game.stage_number - 1][2][1] + 30, 100, 16, false)//足場
-                    var wall4 = create_rectangle(locate[game.stage_number - 1][3][0], locate[game.stage_number - 1][3][1] + 30, 100, 16, false)//足場
+                    var barrier1 = create_rectangle(locate.barrier[game.stage_number - 1][0][0], locate.barrier[game.stage_number - 1][0][1], 50, 16, false);//障害物
+                    var barrier2 = create_rectangle(locate.barrier[game.stage_number - 1][1][0], locate.barrier[game.stage_number - 1][1][1], 50, 16, false);//障害物
+                    var barrier3 = create_rectangle(locate.barrier[game.stage_number - 1][2][0], locate.barrier[game.stage_number - 1][2][1], 50, 16, false);//障害物
+
+                    var wall1 = create_rectangle(locate.truck[game.stage_number - 1][0][0], locate.truck[game.stage_number - 1][0][1] + 30, 100, 16, false);//足場
+                    var wall2 = create_rectangle(locate.truck[game.stage_number - 1][1][0], locate.truck[game.stage_number - 1][1][1] + 30, 100, 16, false)//足場
+                    var wall3 = create_rectangle(locate.truck[game.stage_number - 1][2][0], locate.truck[game.stage_number - 1][2][1] + 30, 100, 16, false)//足場
+                    var wall4 = create_rectangle(locate.truck[game.stage_number - 1][3][0], locate.truck[game.stage_number - 1][3][1] + 30, 100, 16, false)//足場
 
                     // console.log(game.stage_number);
 
@@ -278,7 +309,7 @@
                     star3.x = 292;
                     star3.y = 55;
 
-                    var time = 0;
+                    time = 0;
                     score = 0;
                     // var st_area = new Sprite(101,60)
                     // st_area.x=8;
@@ -348,10 +379,11 @@
                     // scene.addChild(surf);
 
                     //魚（円）の作成
-                    function create_rectangle(x, y, w, h, broken) {
-                        var rect = new PhyBoxSprite(w, h, enchant.box2d.STATIC_SPRITE, 1.0, 0.5, 0.3, true);
+                    function create_rectangle(x, y, w, h, broken, rep = 0.3) {
+                        var rect = new PhyBoxSprite(w, h, enchant.box2d.STATIC_SPRITE, 1.0, 0.5, rep, true);
                         rect.backgroundColor = "#228B22";
                         rect.broken = broken
+
                         rect.position = {
                             x: x,
                             y: y
@@ -500,10 +532,10 @@
 
                         });
                     var truck = []
-                    truck[0] = new Truck(locate[game.stage_number - 1][0][0], locate[game.stage_number - 1][0][1], tracks_max[0]);
-                    truck[1] = new Truck(locate[game.stage_number - 1][1][0], locate[game.stage_number - 1][1][1], tracks_max[1]);
-                    truck[2] = new Truck(locate[game.stage_number - 1][2][0], locate[game.stage_number - 1][2][1], tracks_max[2]);
-                    truck[3] = new Truck(locate[game.stage_number - 1][3][0], locate[game.stage_number - 1][3][1], tracks_max[3]);
+                    truck[0] = new Truck(locate.truck[game.stage_number - 1][0][0], locate.truck[game.stage_number - 1][0][1], tracks_max[0]);
+                    truck[1] = new Truck(locate.truck[game.stage_number - 1][1][0], locate.truck[game.stage_number - 1][1][1], tracks_max[1]);
+                    truck[2] = new Truck(locate.truck[game.stage_number - 1][2][0], locate.truck[game.stage_number - 1][2][1], tracks_max[2]);
+                    truck[3] = new Truck(locate.truck[game.stage_number - 1][3][0], locate.truck[game.stage_number - 1][3][1], tracks_max[3]);
 
                     Fruits = Class.create(PhyCircleSprite,
                         {
@@ -611,9 +643,6 @@
                         bar.context.fillStyle = '#BA68C8';
                         bar.context.rect(0, 0, score * 0.16, 30);
                         bar.context.fill();
-
-
-
                     })
 
                     var time_counter = new Sprite(100, 100)
@@ -648,13 +677,14 @@
                     surf.context.lineTo(arc_x, arc_y);
                     surf.context.fill();
 
+                    time_label.text = 60
                     scene.addEventListener('enterframe', function () {
-                        time_label.text = 60 - time;
                         if (game.frame % 30 == 0) {
+                            time_label.text = 60 - time;
                             time++
                             surf.context.clearRect(0, 0, 100, 100);
                             surf.context.beginPath();
-                            if (time >= 50) {
+                            if (time > 50) {
                                 surf.context.fillStyle = 'rgba(252, 0, 0, 0.8)';
                             } else {
                                 surf.context.fillStyle = 'rgba(252, 200, 0, 0.8)';
@@ -732,13 +762,9 @@
                         get_star[game.stage_number - 1] = star
                     }
 
-                    //ローカルストレージに保存
-                    var local_list = {
-                        clear_stage: clear_stage,
-                        get_star: get_star
-                    }
 
-                    localStorage.setItem('Fruits_local_list', JSON.stringify(local_list));
+                    set_local_list()
+
 
                     // 新しいラベル(文字)を作る
                     var bg = new Sprite(320, height)
@@ -778,6 +804,56 @@
                     if (star >= 1) {
                         game.addStar(100, 240, scene, 30, 2);
                     }
+
+                    // シーンの背景色を設定
+                    scene.addEventListener(Event.TOUCH_START, function (e) {
+                        // シーンにタッチイベントを設定
+                        //現在表示しているシーンを外し、直前のシーンを表示します
+                        // game.popScene();
+                        //ローカルストレージに保存
+
+                        if (clear_stage == 2 && clear_quality == 0) {
+                            clear_quality = 1
+                            set_local_list()
+                            game.replaceScene(createPerfectClearScene());
+                        } else if (total_star(get_star) == 9 && clear_quality == 1) {
+                            clear_quality = 2
+                            set_local_list()
+                            game.replaceScene(createPerfectClearScene());
+                        } else {
+                            set_local_list()
+                            game.replaceScene(selectGameScene());
+                        }
+                    });
+                    // この関数内で作ったシーンを呼び出し元に返します(return)
+                    return scene;
+                };
+
+                // パーフェクトクリアシーンを作り、返す関数
+                var createPerfectClearScene = function () {
+                    var scene = new Scene();                // 新しいシーンを作る
+
+
+                    // 新しいラベル(文字)を作る
+                    var bg = new Sprite(320, height)
+                    bg.backgroundColor = "rgb(0,200,255)";
+                    
+                    //タイトルのラベル
+                    var label = new Label("");
+                    label.font = "32px 'Orbitron'"
+                    label.color = "#006400"
+                    if (clear_quality == 1) {
+                        label.text = "QUALITY CLEAR";
+                        bg.image = game.assets["bg01.png"]
+                    } else {
+                        label.text = "PERFECT CLEAR";
+                        bg.image = game.assets["bg02.png"]
+                    }
+                    label.x = 45
+                    label.y = 80
+                    scene.addChild(bg);
+                    scene.addChild(label)
+
 
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
