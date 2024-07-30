@@ -62,9 +62,9 @@
             var clear_stage
             var clear_quality = 0
             var get_star = []
-            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png', 'bg01.png', 'bg02.png', 'bg03.png', 'score.mp3', 'truck.mp3', 'drop.mp3','bgm.mp3','button.mp3','bomb.mp3','hit.mp3'); //画像のロード指定
+            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png', 'bg01.png', 'bg02.png', 'bg03.png', 'title.png', 'score.mp3', 'truck.mp3', 'drop.mp3', 'bgm.mp3', 'button.mp3', 'bomb.mp3', 'hit.mp3'); //画像のロード指定
 
-            
+
             //メインループ
             game.onload = function () {
                 //物理エンジンの宣言
@@ -119,8 +119,16 @@
                     //タイトル画面
                     var bg_start_scene = new Sprite(320, height)
                     bg_start_scene.image = game.assets["bg_w.png"]
+                    var title = new Sprite(600, 100)
+                    title.image = game.assets["title.png"]
+                    title.scaleX = 0.65
+                    title.scaleY = 0.65
+                    title.x = -135
+                    title.y = 50
 
                     scene.addChild(bg_start_scene);
+                    scene.addChild(title);
+
 
                     //タイトルのラベル
                     var label = new Label("");
@@ -128,7 +136,7 @@
                     label.color = "#006400"
                     label.text = "TAP TO START";
                     label.x = 115
-                    label.y = 160
+                    label.y = 220
                     scene.addChild(label)
 
                     scene.addEventListener(Event.TOUCH_START, function (e) {
@@ -144,7 +152,7 @@
                 };
 
                 var selectGameScene = function () {
-                    
+
                     get_local_list()
 
                     var scene = new Scene();  // 新しいシーンを作る
@@ -214,7 +222,7 @@
                         [[160, height - 120], [160, height - 210], [160, height - 30]]],
                         barrier: [[[160, 200], [60, 300], [260, 300]],
                         [[160, 250], [60, 300], [260, 200]],
-                        [[160,200], [50,height - 140], [270, height - 50]]],
+                        [[160, 200], [50, height - 140], [270, height - 50]]],
 
                     }
 
@@ -452,7 +460,7 @@
                                     we_la.text = this.weight
 
                                     if (this.weight > this.max) {
-                                        
+
                                         this.moving = true;
                                         //色を変える
                                         if (this.frame == 0) {
@@ -475,7 +483,7 @@
                                         we_la.color = "blue";
                                         //左端まで行ったら90度回転させ、上に移動
                                         if (game.frame >= this.broken_time + 50) {
-                                            if (this.bgm == 0){
+                                            if (this.bgm == 0) {
                                                 this.bgm = 1;
                                                 truck_se.play();
                                             }
