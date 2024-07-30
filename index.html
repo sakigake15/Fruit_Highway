@@ -6,10 +6,11 @@
     <meta http-equiv="x-ua-compatible" content="IE=Edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <script type="text/javascript" src="js/build/enchant.js"></script>
     <script src="js/libs/Box2dWeb-2.1.a.3.js"></script>
     <script src="js/build/plugins/box2d.enchant.js"></script>
-    <title>Document</title>
+    <title>Fruit Highway</title>
     <style type="text/css">
         /* font-family: "Vonk Regular"; */
         body {
@@ -61,11 +62,14 @@
             var clear_stage
             var clear_quality = 0
             var get_star = []
-            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png', 'bg01.png', 'bg02.png', 'bg03.png'); //画像のロード指定
+            game.preload('icon0.png', 'fish.png', 'truck2.png', 'bg_w.png', 'bg01.png', 'bg02.png', 'bg03.png', 'score.mp3', 'truck.mp3', 'drop.mp3','bgm.mp3','button.mp3','bomb.mp3','hit.mp3'); //画像のロード指定
 
+            
             //メインループ
             game.onload = function () {
                 //物理エンジンの宣言
+                var bgm = game.assets['bgm.mp3']
+                var click_se = game.assets['button.mp3']
 
                 game.addStar = function (x, y, scene, flame, scale) {
                     var star = new Sprite(16, 16);
@@ -128,6 +132,9 @@
                     scene.addChild(label)
 
                     scene.addEventListener(Event.TOUCH_START, function (e) {
+                        click_se.play()
+                        bgm.play()
+                        bgm.src.loop = true;
                         // シーンにタッチイベントを設定
                         //現在表示しているシーンをゲームシーンに置き換えます
                         game.replaceScene(selectGameScene());
@@ -137,6 +144,7 @@
                 };
 
                 var selectGameScene = function () {
+                    
                     get_local_list()
 
                     var scene = new Scene();  // 新しいシーンを作る
@@ -165,6 +173,7 @@
                         label.text = text;
 
                         button.addEventListener("touchstart", function () {
+                            click_se.play()
                             game.stage_number = text;
                             game.replaceScene(createGameScene());
                             // game.replaceScene(createClearScene());
@@ -200,12 +209,12 @@
                     //PhyCircleSprite(半径, 静的/動的/キネマティック, 密度, 摩擦, 反発, 初めから物理演算を行うか)
                     //動かないもの：enchant.box2d.STATIC_SPRITE、重力の影響を受けて動かしたいもの:enchant.box2d.DYNAMIC_SPRITE、スクリプトで動かすオブジェクト:KINEMATIC_SPRITE
                     var locate = {
-                        truck: [[[50, height - 130], [260, height - 130], [100, height - 30], [210, height - 30]],
-                        [[50, height - 150], [120, height - 110], [190, height - 70], [260, height - 30]],
-                        [[50, height - 80], [160, height - 150], [160, height - 30], [260, height - 80]]],
+                        truck: [[[50, height - 130], [260, height - 130], [160, height - 30]],
+                        [[50, height - 150], [160, height - 90], [260, height - 30]],
+                        [[160, height - 120], [160, height - 210], [160, height - 30]]],
                         barrier: [[[160, 200], [60, 300], [260, 300]],
-                        [[160, 200], [60, 300], [260, 300]],
-                        [[160, 200], [60, 300], [260, 300]]],
+                        [[160, 250], [60, 300], [260, 200]],
+                        [[160,200], [50,height - 140], [270, height - 50]]],
 
                     }
 
@@ -221,7 +230,6 @@
                     var wall1 = create_rectangle(locate.truck[game.stage_number - 1][0][0], locate.truck[game.stage_number - 1][0][1] + 30, 100, 16, false);//足場
                     var wall2 = create_rectangle(locate.truck[game.stage_number - 1][1][0], locate.truck[game.stage_number - 1][1][1] + 30, 100, 16, false)//足場
                     var wall3 = create_rectangle(locate.truck[game.stage_number - 1][2][0], locate.truck[game.stage_number - 1][2][1] + 30, 100, 16, false)//足場
-                    var wall4 = create_rectangle(locate.truck[game.stage_number - 1][3][0], locate.truck[game.stage_number - 1][3][1] + 30, 100, 16, false)//足場
 
                     // console.log(game.stage_number);
 
@@ -229,7 +237,6 @@
                     tracks_max[0] = (Math.floor(Math.random() * 10) + 5) * 30
                     tracks_max[1] = (Math.floor(Math.random() * 10) + 5) * 30
                     tracks_max[2] = (Math.floor(Math.random() * 10) + 5) * 30
-                    tracks_max[3] = (Math.floor(Math.random() * 10) + 5) * 30
 
                     var Fr_fr = [32, 16, 18]
                     var Fr_we = [10, 30, 50]
@@ -378,7 +385,7 @@
                     // player.y = 200;
                     // scene.addChild(surf);
 
-                    //魚（円）の作成
+                    //バリアの作成
                     function create_rectangle(x, y, w, h, broken, rep = 0.3) {
                         var rect = new PhyBoxSprite(w, h, enchant.box2d.STATIC_SPRITE, 1.0, 0.5, rep, true);
                         rect.backgroundColor = "#228B22";
@@ -401,6 +408,7 @@
                                 this.frame = 0; //画像の中のフレームの数字
                                 // this.scaleX = 0.1; //画像の拡大率
                                 // this.scaleY = 0.1; //画像の拡大率
+                                this.bgm = 0;
                                 this.position = {
                                     x: x,
                                     y: y
@@ -436,15 +444,21 @@
                                 we_la.x = this.x + 40;
                                 we_la.y = this.y + 8;
                                 this.i = 0;
+                                var truck_se = game.assets['truck.mp3']
+                                var broken_se = game.assets['bomb.mp3']
                                 this.addEventListener(Event.ENTER_FRAME, function () {
 
                                     max_la.text = this.max;
                                     we_la.text = this.weight
 
                                     if (this.weight > this.max) {
+                                        
                                         this.moving = true;
                                         //色を変える
-                                        this.frame = 1;
+                                        if (this.frame == 0) {
+                                            broken_se.play();
+                                            this.frame = 1;
+                                        }
                                         we_la.color = "red";
                                         if (game.frame >= this.broken_time + 100) {
                                             if (this.x < 400) {
@@ -461,6 +475,10 @@
                                         we_la.color = "blue";
                                         //左端まで行ったら90度回転させ、上に移動
                                         if (game.frame >= this.broken_time + 50) {
+                                            if (this.bgm == 0){
+                                                this.bgm = 1;
+                                                truck_se.play();
+                                            }
                                             this.moving = true;
                                             if (this.x < -10) {
                                                 this.angle = 90;
@@ -477,6 +495,10 @@
                                                 if (this.y < 10) {
                                                     scene.removeChild(we_la)
                                                     if (this.weight > 0) {
+                                                        truck_se.stop();
+                                                        this.bgm = 0;
+                                                        var score_se = game.assets['score.mp3']
+                                                        score_se.play();
                                                         if (this.i < this.weight / 10) {
                                                             this.i++
                                                             score = score + 10
@@ -517,11 +539,6 @@
                                         this.max = (Math.floor(Math.random() * 10) + 5) * 30
                                         this.moving = false;
                                     }
-
-                                    //クリックしたら
-                                    this.ontouchend = function () {
-                                        //力を加える(x,y方向)
-                                    };
                                 });
                                 this.broken = true;
                                 //登録
@@ -535,7 +552,6 @@
                     truck[0] = new Truck(locate.truck[game.stage_number - 1][0][0], locate.truck[game.stage_number - 1][0][1], tracks_max[0]);
                     truck[1] = new Truck(locate.truck[game.stage_number - 1][1][0], locate.truck[game.stage_number - 1][1][1], tracks_max[1]);
                     truck[2] = new Truck(locate.truck[game.stage_number - 1][2][0], locate.truck[game.stage_number - 1][2][1], tracks_max[2]);
-                    truck[3] = new Truck(locate.truck[game.stage_number - 1][3][0], locate.truck[game.stage_number - 1][3][1], tracks_max[3]);
 
                     Fruits = Class.create(PhyCircleSprite,
                         {
@@ -552,11 +568,14 @@
                                 this.destroyed = true;
                                 this.weight = Fr_we[num];
 
+                                var hit_se = game.assets['hit.mp3']
+
                                 this.addEventListener(Event.ENTER_FRAME, function () {
                                     // for (var i = 0; i < truck.length; i++){
 
                                     for (var i = 0; i < truck.length; i++) {
                                         truck[i].contact(function (sprite) { // 衝突判定
+                                            hit_se.play();
                                             // console.log(sprite);
                                             if (sprite.destroyed == true && truck[i].moving == false) {
                                                 sprite.destroyed = false;
@@ -596,10 +615,6 @@
                                     //     scene.destroy(this);
                                     // }
 
-                                    //クリックしたら
-                                    this.ontouchend = function () {
-                                        //力を加える(x,y方向)
-                                    };
                                 });
                                 //登録
                                 scene.addChild(this);
@@ -627,12 +642,6 @@
 
                         }
                     });
-
-                    //シーンをクリック
-                    scene.ontouchend = function (event) {
-
-
-                    };
 
                     score_la.addEventListener('enterframe', function () {
                         //スコアを五桁のゼロ埋めで表示
@@ -719,7 +728,8 @@
                     });
                     var fruits_name = 0;
                     scene.addEventListener("touchstart", function (e) {
-                        console.log(next_fruits)
+                        var drop_se = game.assets['drop.mp3']
+                        drop_se.play();
 
                         var melon = new Fruits(next_fruits[0], e.x, 10, 1.0, 0.5, 0.3);
                         melon.applyImpulse(new b2Vec2(0, 0.5));
@@ -807,17 +817,19 @@
 
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
+                        click_se.play()
                         // シーンにタッチイベントを設定
                         //現在表示しているシーンを外し、直前のシーンを表示します
                         // game.popScene();
                         //ローカルストレージに保存
 
-                        if (clear_stage == 2 && clear_quality == 0) {
-                            clear_quality = 1
+
+                        if (total_star(get_star) == 9 && clear_quality <= 1) {
+                            clear_quality = 2
                             set_local_list()
                             game.replaceScene(createPerfectClearScene());
-                        } else if (total_star(get_star) == 9 && clear_quality == 1) {
-                            clear_quality = 2
+                        } else if (clear_stage == 3 && clear_quality == 0) {
+                            clear_quality = 1
                             set_local_list()
                             game.replaceScene(createPerfectClearScene());
                         } else {
@@ -837,7 +849,7 @@
                     // 新しいラベル(文字)を作る
                     var bg = new Sprite(320, height)
                     bg.backgroundColor = "rgb(0,200,255)";
-                    
+
                     //タイトルのラベル
                     var label = new Label("");
                     label.font = "32px 'Orbitron'"
@@ -845,7 +857,7 @@
                     if (clear_quality == 1) {
                         label.text = "QUALITY CLEAR";
                         bg.image = game.assets["bg01.png"]
-                    } else {
+                    } else if (clear_quality == 2) {
                         label.text = "PERFECT CLEAR";
                         bg.image = game.assets["bg02.png"]
                     }
@@ -857,6 +869,7 @@
 
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
+                        click_se.play()
                         // シーンにタッチイベントを設定
                         //現在表示しているシーンを外し、直前のシーンを表示します
                         // game.popScene();
@@ -916,6 +929,7 @@
 
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
+                        click_se.play()
                         // シーンにタッチイベントを設定
                         //現在表示しているシーンを外し、直前のシーンを表示します
                         // game.popScene();
@@ -932,8 +946,6 @@
             game.start();
 
         }
-        //画像、音
+        //{"clear_stage":3,"get_star":[3,3,3],"clear_quality":2}
     </script>
-</body>
-
-</html>
+</body </html>
